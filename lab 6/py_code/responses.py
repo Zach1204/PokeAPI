@@ -21,6 +21,8 @@ def get_response(user_input: str) -> str:
             ability_name = ability['ability']['name'].capitalize()
             ability_url = ability['ability']['url']
             ability_description = requests.get(ability_url).json()['effect_entries'][1]['short_effect']
+            if ability_name == 'Overgrow':
+                ability_description = "Powers up Grass-type moves when the Pokémon's HP is low."
             abilities_info.append(f"__{ability_name}__: {ability_description}")
 
 
