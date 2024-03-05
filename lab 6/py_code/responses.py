@@ -1,6 +1,30 @@
 import requests
 from discord import Embed
 
+#Pokemon evolution chain 
+def get_evolution_chain(pokemon_name: str) -> str:
+    lowered = pokemon_name.lower()
+
+    response = requests.get(f'https://pokeapi.co/api/v2/pokemon-species/{lowered}/')
+    species_data = response.json()
+
+    if 'evolution_chain' not in species_data:
+        return None
+
+    evolution_chain_url = species_data['evolution_chain']['url']
+    evolution_chain_response = requests.get(evolution_chain_url)
+    evolution_chain_data = evolution_chain_response.json()
+
+    evolution_tree = []
+    current_evolution = evolution_chain_data['chain']
+    while True:
+        evolution_tree.append(current_evolution['species']['name'].capitalize())
+        if not current_evolution['evolves_to']:
+            break
+        current_evolution = current_evolution['evolves_to'][0]
+    
+    return ' -> '.join(evolution_tree)
+
 #converts pokemon name to lower
 def get_response(user_input: str) -> str: 
     lowered: str = user_input.lower()
@@ -24,7 +48,10 @@ def get_response(user_input: str) -> str:
             if ability_name == 'Overgrow':
                 ability_description = "Powers up Grass-type moves when the Pokémon's HP is low."
             abilities_info.append(f"__{ability_name}__: {ability_description}")
-
+        
+    evolution_tree = get_evolution_chain(name)
+    if evolution_tree:
+        abilities_info.append(f"__Evolution__: {evolution_tree}")
 
     #results!
     info = Embed(title=name)
